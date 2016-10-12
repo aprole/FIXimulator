@@ -35,6 +35,16 @@ public class FIXimulatorFrame extends javax.swing.JFrame {
         return dialogIOI;
     }
     
+    private void showExecutionDlg(int nQty, double dLimit)
+    {
+        executionDialog.getRootPane().setDefaultButton(executionDialogOK);
+        executionDialogShares.setValue(nQty);
+        executionDialogPrice.setValue(dLimit);
+        executionDialog.pack();
+        executionDialog.setLocationRelativeTo(this);
+        executionDialog.setVisible(true);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -2078,11 +2088,11 @@ private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     if ( row != -1 ) {
         row = orderTable.convertRowIndexToModel(row);
         Order order = FIXimulator.getApplication().getOrders().getOrder(row);
-        dialogExecution = new Execution(order);
-        executionDialogShares.setValue(0);
-        executionDialogPrice.setValue(0.0);
-        executionDialog.pack();
-        executionDialog.setVisible(true);
+        if (!order.getStatus().equals("Received"))
+        {
+            dialogExecution = new Execution(order);
+            showExecutionDlg((int)order.getQuantity(), order.getLimit());
+        }
     }
 
 }//GEN-LAST:event_executeButtonActionPerformed
@@ -2097,10 +2107,8 @@ private void executionCorrectButtonActionPerformed(java.awt.event.ActionEvent ev
         if ( execution.getExecType().equals("Fill") ||
              execution.getExecType().equals("Partial fill")) {
             dialogExecution = execution.clone();
-            executionDialogShares.setValue(execution.getLastShares());
-            executionDialogPrice.setValue(execution.getLastPx());
-            executionDialog.pack();
-            executionDialog.setVisible(true);
+            
+            showExecutionDlg((int)execution.getLastShares(), execution.getLastPx());
         } else { 
             System.out.println(
                     "\"" + execution.getExecType() + "\" " + 
